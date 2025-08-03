@@ -46,11 +46,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p ${REMOTE_PORT:-22} ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
             cd ${{ secrets.REMOTE_PATH }}
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID}}" >> .env
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET}}" >> .env
-            echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL }}" >> .env
-            echo "NEXTAUTH_SECRET=${{secrets.NEXTAUTH_SECRET}}" >> .env
             pm2 startOrReload ecosystem.config.js --env production
             pm2 save
           EOF

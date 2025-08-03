@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "build": "nx build example",
-    "lint": "nx run example:lint"
+    "lint": "nx run example:lint",
+    "test": "nx run example:test"
   },
   "private": true,
   "dependencies": {
