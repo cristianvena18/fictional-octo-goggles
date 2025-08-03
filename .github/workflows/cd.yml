@@ -1,0 +1,56 @@
+name: cd-prod.yml
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    environment: 'production'
+    steps:
+      - name: Hacer checkout
+        uses: actions/checkout@v4
+
+      - name: make build
+        run: |
+          npm ci
+          npm run build
+          npm prune --omit=dev
+
+      - name: configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+        shell: bash
+
+      - name: upload files to vps
+        env:
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p ${REMOTE_PORT:-22}" ./ ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}
+
+      - name: reload pm2
+        env:
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p ${REMOTE_PORT:-22} ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
+            cd ${{ secrets.REMOTE_PATH }}
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID}}" >> .env
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET}}" >> .env
+            echo "NEXTAUTH_URL=${{ vars.NEXTAUTH_URL }}" >> .env
+            echo "NEXTAUTH_SECRET=${{secrets.NEXTAUTH_SECRET}}" >> .env
+            pm2 startOrReload ecosystem.config.js --env production
+            pm2 save
+          EOF

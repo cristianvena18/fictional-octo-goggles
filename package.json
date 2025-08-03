@@ -1,8 +1,11 @@
 {
-  "name": "@./source",
+  "name": "example-cicd",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "nx build example",
+    "lint": "nx run example:lint"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",

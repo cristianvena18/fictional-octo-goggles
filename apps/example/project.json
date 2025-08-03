@@ -17,6 +17,13 @@
         }
       }
     },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/example/**/*.ts"]
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "@nx/js:node",
