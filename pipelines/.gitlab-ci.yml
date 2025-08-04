@@ -1,0 +1,40 @@
+include:
+  - project: "devops/templates"
+    ref: my-branch
+    file: "evoluciondigital/pipeline_templates/.gitlab-ci-golden-api-ha.yml"
+.job_template: &god_template |
+  function version_wiru()
+  {
+    version=$(echo $RUNNER | awk -F '[:]' '{ print $2 }') && echo "Job Federal - Runner-> $version -> $DEVOPS_PY_LIBRARY_VERSION"
+  }
+  function nvm_setup()
+  {
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    type nvm &>/dev/null ; if [[ $? -eq 0 ]]; then nvm ls ;  if [ -f ".nvmrc" ]; then nvm install $(<.nvmrc) ; nvm use $(<.nvmrc) ; else nvm install v8.17.0 ; nvm use v8.17.0 ; fi ; node -v ; fi
+    echo "Node Version configurada: $(node -v)" ; node -v
+    echo "NPM Version configurada: $(npm -v)" ; npm -v
+  }
+  function download_wiru()
+  {
+    pip3 install virtualenv
+    virtualenv -p python3 /opt/devopspipe
+    source /opt/devopspipe/bin/activate
+    pip3 install setuptools==60.6.0
+    pip3 install mytool==$DEVOPS_PY_LIBRARY_VERSION --no-deps --index-url https://__token__:$TOKEN_READ_PYTHON@gitlab.com/api/v4/projects/00000000/packages/pypi/simple
+    python -m pip install --upgrade pip
+    pip3 show mytool
+    pip3 install -r /opt/devopspipe/lib/python3.8/site-packages/pipe/requirements.txt --use-feature=2020-resolver --cache-dir=/opt/devopspipe/.cache/pip/
+  }
+  function setup_mytool()
+  {
+    mv devopspipe/ /opt/
+    source /opt/devopspipe/bin/activate
+    export PYTHONPATH="${PYTHONPATH}:/opt/devopspipe/lib/python3.8/site-packages/pipe/"
+  }
+Swagger transformation Region_1:
+  variables:
+    DISABLED: "true"
+Deploy ApiGw Region_1:
+  variables:
+    DISABLED: "true"
