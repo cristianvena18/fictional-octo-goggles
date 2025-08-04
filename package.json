@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "start": "node dist/apps/example/main.js",
     "build": "nx build example",
     "lint": "nx run example:lint",
     "test": "nx run example:test"
