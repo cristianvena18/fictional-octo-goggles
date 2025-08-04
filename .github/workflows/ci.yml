@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+      - 'releases/**'
+      - develop
   pull_request:
 
 permissions:
